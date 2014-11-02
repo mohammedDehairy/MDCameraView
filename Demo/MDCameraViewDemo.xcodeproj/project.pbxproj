@@ -15,7 +15,7 @@
 		3DBCD77F1A06837A00AE9981 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3DBCD77E1A06837A00AE9981 /* Images.xcassets */; };
 		3DBCD7821A06837A00AE9981 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3DBCD7801A06837A00AE9981 /* LaunchScreen.xib */; };
 		3DBCD78E1A06837A00AE9981 /* MDCameraViewDemoTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DBCD78D1A06837A00AE9981 /* MDCameraViewDemoTests.m */; };
-		3DBCD79D1A06844900AE9981 /* MDCameraView.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DBCD79C1A06844900AE9981 /* MDCameraView.m */; };
+		3DBCD7A11A0688C900AE9981 /* MDCameraView.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DBCD7A01A0688C900AE9981 /* MDCameraView.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -43,8 +43,8 @@
 		3DBCD7871A06837A00AE9981 /* MDCameraViewDemoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MDCameraViewDemoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3DBCD78C1A06837A00AE9981 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		3DBCD78D1A06837A00AE9981 /* MDCameraViewDemoTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MDCameraViewDemoTests.m; sourceTree = "<group>"; };
-		3DBCD79B1A06844900AE9981 /* MDCameraView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MDCameraView.h; sourceTree = "<group>"; };
-		3DBCD79C1A06844900AE9981 /* MDCameraView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MDCameraView.m; sourceTree = "<group>"; };
+		3DBCD79F1A0688C900AE9981 /* MDCameraView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MDCameraView.h; sourceTree = "<group>"; };
+		3DBCD7A01A0688C900AE9981 /* MDCameraView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MDCameraView.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -68,7 +68,7 @@
 		3DBCD7621A06837A00AE9981 = {
 			isa = PBXGroup;
 			children = (
-				3DBCD7971A0683C800AE9981 /* CameraView */,
+				3DBCD79E1A0688C900AE9981 /* CameraView */,
 				3DBCD76D1A06837A00AE9981 /* MDCameraViewDemo */,
 				3DBCD78A1A06837A00AE9981 /* MDCameraViewDemoTests */,
 				3DBCD76C1A06837A00AE9981 /* Products */,
@@ -126,14 +126,14 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
-		3DBCD7971A0683C800AE9981 /* CameraView */ = {
+		3DBCD79E1A0688C900AE9981 /* CameraView */ = {
 			isa = PBXGroup;
 			children = (
-				3DBCD79B1A06844900AE9981 /* MDCameraView.h */,
-				3DBCD79C1A06844900AE9981 /* MDCameraView.m */,
+				3DBCD79F1A0688C900AE9981 /* MDCameraView.h */,
+				3DBCD7A01A0688C900AE9981 /* MDCameraView.m */,
 			);
 			name = CameraView;
-			path = ../../Classes/CameraView;
+			path = ../Classes/CameraView;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -238,9 +238,9 @@
 			files = (
 				3DBCD7741A06837A00AE9981 /* AppDelegate.m in Sources */,
 				3DBCD7711A06837A00AE9981 /* main.m in Sources */,
-				3DBCD79D1A06844900AE9981 /* MDCameraView.m in Sources */,
 				3DBCD77A1A06837A00AE9981 /* ViewController.m in Sources */,
 				3DBCD7771A06837A00AE9981 /* MDCameraViewDemo.xcdatamodeld in Sources */,
+				3DBCD7A11A0688C900AE9981 /* MDCameraView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -433,6 +433,7 @@
 				3DBCD7931A06837A00AE9981 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		3DBCD7941A06837A00AE9981 /* Build configuration list for PBXNativeTarget "MDCameraViewDemoTests" */ = {
 			isa = XCConfigurationList;
@@ -441,6 +442,7 @@
 				3DBCD7961A06837A00AE9981 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 
