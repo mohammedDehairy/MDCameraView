@@ -90,6 +90,22 @@
     previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
     
     
+    AVCaptureVideoDataOutput *dataOutput = [[AVCaptureVideoDataOutput alloc] init];
+    
+    [dataOutput setAlwaysDiscardsLateVideoFrames:YES];
+    [dataOutput setVideoSettings:[NSDictionary dictionaryWithObject:
+                              [NSNumber numberWithInt:kCVPixelFormatType_32BGRA]
+                                                         forKey:(id)kCVPixelBufferPixelFormatTypeKey]];
+    dispatch_queue_t queue = dispatch_queue_create("dataOutputQueue", DISPATCH_QUEUE_SERIAL);
+    
+    [dataOutput setSampleBufferDelegate:self queue:queue];
+    
+    if([session canAddOutput:dataOutput])
+    {
+        [session addOutput:dataOutput];
+    }
+    
+    
     stillImageOuPut = [[AVCaptureStillImageOutput alloc] init];
     NSDictionary *outPutSettings = @{AVVideoCodecKey:AVVideoCodecJPEG};
     [stillImageOuPut setOutputSettings:outPutSettings];
@@ -284,6 +300,60 @@
         [self setcamera:cameraTypeBack];
         return cameraTypeBack;
     }
+}
+
+-(void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection
+{
+    
+    if(!_delegate || ![_delegate respondsToSelector:@selector(drawOverLayOnCameraPreviewLayerWithContext:)])
+    {
+        return;
+    }
+    
+    // Get a CMSampleBuffer's Core Video image buffer for the media data
+    CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
+    // Lock the base address of the pixel buffer
+    CVPixelBufferLockBaseAddress(imageBuffer, 0);
+    
+    // Get the number of bytes per row for the pixel buffer
+    void *baseAddress = CVPixelBufferGetBaseAddress(imageBuffer);
+    
+    // Get the number of bytes per row for the pixel buffer
+    size_t bytesPerRow = CVPixelBufferGetBytesPerRow(imageBuffer);
+    // Get the pixel buffer width and height
+    size_t width = CVPixelBufferGetWidth(imageBuffer);
+    size_t height = CVPixelBufferGetHeight(imageBuffer);
+    
+    // Create a device-dependent RGB color space
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    
+    // Create a bitmap graphics context with the sample buffer data
+    CGContextRef context = CGBitmapContextCreate(baseAddress, width, height, 8,
+                                                 bytesPerRow, colorSpace, kCGBitmapByteOrder32Little | kCGImageAlphaPremultipliedFirst);
+    
+    if (!context)
+    {
+        CGColorSpaceRelease(colorSpace);
+        CVPixelBufferUnlockBaseAddress(imageBuffer, 0);
+        NSLog(@"Error creating bitmap context");
+        return ;
+    }
+    
+    CGAffineTransform transform = CGAffineTransformIdentity;
+    transform = CGAffineTransformScale(transform, 1.0f, -1.0f);
+    transform = CGAffineTransformTranslate(transform, 0.0f, -height);
+    CGContextConcatCTM(context, transform);
+    
+    // Perform drawing
+    UIGraphicsPushContext(context);
+    [_delegate drawOverLayOnCameraPreviewLayerWithContext:context];
+    UIGraphicsPopContext();
+    
+    CGColorSpaceRelease(colorSpace);
+    CGContextRelease(context);
+    CVPixelBufferUnlockBaseAddress(imageBuffer, 0);
+    
+    
 }
 /*
  // Only override drawRect: if you perform custom drawing.

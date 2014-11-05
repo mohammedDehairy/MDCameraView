@@ -7,7 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
-
+@import AVFoundation;
 
 typedef enum {
     
@@ -17,10 +17,11 @@ typedef enum {
 
 @protocol MDCamerViewProtocol <NSObject>
 
+-(void)drawOverLayOnCameraPreviewLayerWithContext:(CGContextRef)context;
 
 @end
 
-@interface MDCameraView : UIView
+@interface MDCameraView : UIView <AVCaptureVideoDataOutputSampleBufferDelegate>
 
 @property(nonatomic)BOOL animeModeOn;
 @property(nonatomic,weak)id<MDCamerViewProtocol> delegate;
