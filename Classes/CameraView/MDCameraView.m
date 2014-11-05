@@ -17,7 +17,8 @@
     AVCaptureDeviceInput *backDeviceInput;
     AVCaptureDevice *frontDevice;
     AVCaptureDeviceInput *frontDeviceInput;
-    AVCaptureVideoPreviewLayer *previewLayer;
+    //AVCaptureVideoPreviewLayer *previewLayer;
+    AVCaptureVideoDataOutput *dataOutput;
     AVCaptureStillImageOutput *stillImageOuPut;
     
     UIImage *lastImage;
@@ -25,6 +26,8 @@
     UIImageView *preImageLayer;
     
     cameraType currentCamType;
+    
+    CALayer *previewLayer;
 }
 @end
 
@@ -46,7 +49,6 @@
     if(self)
     {
         
-        // [[NSNotificationCenter defaultCenter] addObserver:self  selector:@selector(orientationChanged)    name:UIDeviceOrientationDidChangeNotification  object:nil];
         
         [self initalizeVideoSession];
         
@@ -83,19 +85,24 @@
     
     //self.layer.bounds = CGRectMake(0, 0, self.frame.size.width, self.frame.size.height);
     
-    previewLayer = [[AVCaptureVideoPreviewLayer alloc] initWithSession:session];
+    /*previewLayer = [[AVCaptureVideoPreviewLayer alloc] initWithSession:session];
     previewLayer.frame = CGRectMake(0, 0, self.layer.bounds.size.width, self.layer.bounds.size.height);
     //[self orientationChanged];
     [self.layer addSublayer:previewLayer];
-    previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
+    previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;*/
+    previewLayer = [CALayer layer];
+    previewLayer.frame = CGRectMake(0, 0, self.layer.bounds.size.width, self.layer.bounds.size.height);
+    [self.layer addSublayer:previewLayer];
+    previewLayer.contentsGravity = kCAGravityResizeAspectFill;
     
     
-    AVCaptureVideoDataOutput *dataOutput = [[AVCaptureVideoDataOutput alloc] init];
+    dataOutput = [[AVCaptureVideoDataOutput alloc] init];
     
     [dataOutput setAlwaysDiscardsLateVideoFrames:YES];
     [dataOutput setVideoSettings:[NSDictionary dictionaryWithObject:
                               [NSNumber numberWithInt:kCVPixelFormatType_32BGRA]
                                                          forKey:(id)kCVPixelBufferPixelFormatTypeKey]];
+    
     dispatch_queue_t queue = dispatch_queue_create("dataOutputQueue", DISPATCH_QUEUE_SERIAL);
     
     [dataOutput setSampleBufferDelegate:self queue:queue];
@@ -106,6 +113,7 @@
     }
     
     [[dataOutput connectionWithMediaType:AVMediaTypeVideo] setEnabled:YES];
+    [[dataOutput connectionWithMediaType:AVMediaTypeVideo] setVideoOrientation:AVCaptureVideoOrientationPortrait];
     
     
     stillImageOuPut = [[AVCaptureStillImageOutput alloc] init];
@@ -114,27 +122,6 @@
     [session addOutput:stillImageOuPut];
     
     currentCamType = cameraTypeBack;
-}
--(void)orientationChanged
-{
-    switch ([UIApplication sharedApplication].statusBarOrientation) {
-        case UIInterfaceOrientationLandscapeLeft:
-            [previewLayer.connection setVideoOrientation:AVCaptureVideoOrientationLandscapeRight];
-            break;
-        case UIInterfaceOrientationLandscapeRight:
-            [previewLayer.connection setVideoOrientation:AVCaptureVideoOrientationLandscapeLeft];
-            break;
-        case UIInterfaceOrientationPortrait:
-            [previewLayer.connection setVideoOrientation:AVCaptureVideoOrientationPortrait];
-            break;
-        case UIInterfaceOrientationPortraitUpsideDown:
-            [previewLayer.connection setVideoOrientation:AVCaptureVideoOrientationPortraitUpsideDown];
-            break;
-        default:
-            [previewLayer.connection setVideoOrientation:AVCaptureVideoOrientationLandscapeRight];
-            break;
-    }
-    
 }
 -(AVCaptureVideoOrientation)videoOrientationforCurrent
 {
@@ -156,6 +143,7 @@
             break;
     }
 }
+
 -(void)setRunnging:(BOOL)running
 {
     if(running)
@@ -286,6 +274,8 @@
     currentCamType = cam;
     
     [session commitConfiguration];
+    
+    [[dataOutput connectionWithMediaType:AVMediaTypeVideo] setVideoOrientation:[self videoOrientationforCurrent]];
 }
 -(cameraType)currentCamera
 {
@@ -326,35 +316,50 @@
     size_t width = CVPixelBufferGetWidth(imageBuffer);
     size_t height = CVPixelBufferGetHeight(imageBuffer);
     
-    // Create a device-dependent RGB color space
-    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
     
-    // Create a bitmap graphics context with the sample buffer data
-    CGContextRef context = CGBitmapContextCreate(baseAddress, width, height, 8,
-                                                 bytesPerRow, colorSpace, kCGBitmapByteOrder32Little | kCGImageAlphaPremultipliedFirst);
+    dispatch_sync(dispatch_get_main_queue(), ^(void){
     
-    if (!context)
-    {
+    
+        // Create a device-dependent RGB color space
+        CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+        
+        // Create a bitmap graphics context with the sample buffer data
+        CGContextRef context = CGBitmapContextCreate(baseAddress, width, height, 8,
+                                                     bytesPerRow, colorSpace, kCGBitmapByteOrder32Little | kCGImageAlphaPremultipliedFirst);
+        
+        
+        
+        
+        if (!context)
+        {
+            CGColorSpaceRelease(colorSpace);
+            CVPixelBufferUnlockBaseAddress(imageBuffer, 0);
+            NSLog(@"Error creating bitmap context");
+            return ;
+        }
+        
+        CGAffineTransform transform = CGAffineTransformIdentity;
+        transform = CGAffineTransformScale(transform, 1.0f, -1.0f);
+        transform = CGAffineTransformTranslate(transform, 0.0f, -height);
+        CGContextConcatCTM(context, transform);
+        
+        
+        // Perform drawing
+        UIGraphicsPushContext(context);
+        [_delegate drawOverLayOnCameraPreviewLayerWithContext:context];
+        UIGraphicsPopContext();
+        
+        CGImageRef cgimage = CGBitmapContextCreateImage(context);
+        [previewLayer setContents:(__bridge id)cgimage];
+        CGImageRelease(cgimage);
+        
         CGColorSpaceRelease(colorSpace);
-        CVPixelBufferUnlockBaseAddress(imageBuffer, 0);
-        NSLog(@"Error creating bitmap context");
-        return ;
-    }
+        CGContextRelease(context);
+        
     
-    CGAffineTransform transform = CGAffineTransformIdentity;
-    transform = CGAffineTransformScale(transform, 1.0f, -1.0f);
-    transform = CGAffineTransformTranslate(transform, 0.0f, -height);
-    CGContextConcatCTM(context, transform);
+    });
     
-    // Perform drawing
-    UIGraphicsPushContext(context);
-    [_delegate drawOverLayOnCameraPreviewLayerWithContext:context];
-    UIGraphicsPopContext();
-    
-    CGColorSpaceRelease(colorSpace);
-    CGContextRelease(context);
     CVPixelBufferUnlockBaseAddress(imageBuffer, 0);
-    
     
 }
 /*

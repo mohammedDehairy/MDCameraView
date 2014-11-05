@@ -44,4 +44,12 @@
     // Dispose of any resources that can be recreated.
 }
 
+-(void)drawOverLayOnCameraPreviewLayerWithContext:(CGContextRef)context
+{
+    CGContextSetStrokeColorWithColor(context, [UIColor yellowColor].CGColor);
+    CGContextSetLineWidth(context, 1);
+    CGContextAddRect(context, CGRectMake(50, 50, 100, 100));
+    CGContextStrokePath(context);
+}
+
 @end
