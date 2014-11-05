@@ -105,6 +105,8 @@
         [session addOutput:dataOutput];
     }
     
+    [[dataOutput connectionWithMediaType:AVMediaTypeVideo] setEnabled:YES];
+    
     
     stillImageOuPut = [[AVCaptureStillImageOutput alloc] init];
     NSDictionary *outPutSettings = @{AVVideoCodecKey:AVVideoCodecJPEG};
